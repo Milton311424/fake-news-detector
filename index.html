@@ -1,0 +1,62 @@
+<!-- templates/index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Fake News Detector</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #121212;
+            color: white;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            margin-top: 100px;
+        }
+        textarea {
+            width: 60%;
+            height: 150px;
+            padding: 10px;
+            font-size: 16px;
+            border-radius: 10px;
+        }
+        button {
+            background-color: #008CBA;
+            border: none;
+            color: white;
+            padding: 10px 25px;
+            font-size: 16px;
+            margin-top: 10px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #005f73;
+        }
+        .result {
+            margin-top: 20px;
+            font-size: 20px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📰 Fake News Detection Portal</h1>
+        <form action="/predict" method="post">
+            <textarea name="news_text" placeholder="Enter news text here..." required></textarea><br>
+            <button type="submit">Check</button>
+        </form>
+
+        {% if prediction_text %}
+            <div class="result">
+                <p>{{ prediction_text }}</p>
+                <p><small>Input: {{ input_text }}</small></p>
+            </div>
+        {% endif %}
+    </div>
+</body>
+</html>
