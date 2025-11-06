@@ -1,42 +1,36 @@
 from flask import Flask, request, render_template_string
+import tensorflow as tf
 import pickle
-import os
+from tensorflow.keras.preprocessing.sequence import pad_sequences
 
 app = Flask(__name__)
 
-# ✅ Model and vectorizer in root folder
-MODEL_PATH = "fake_news_model.pkl"
-VECTORIZER_PATH = "vectorizer.pkl"
+MODEL_PATH = "fake_news_model.h5"
+TOKENIZER_PATH = "tokenizer.pkl"
 
-# Load model and vectorizer
-with open(MODEL_PATH, "rb") as f:
-    model = pickle.load(f)
+# Load LSTM model and tokenizer
+model = tf.keras.models.load_model(MODEL_PATH)
+with open(TOKENIZER_PATH, "rb") as f:
+    tokenizer = pickle.load(f)
 
-with open(VECTORIZER_PATH, "rb") as f:
-    vectorizer = pickle.load(f)
+max_len = 150
 
-# ✅ Load HTML directly from the root index.html file
 def load_html():
-    with open("index.html", "r", encoding="utf-8") as file:
-        return file.read()
+    with open("index.html", "r", encoding="utf-8") as f:
+        return f.read()
 
 @app.route('/')
 def home():
-    html = load_html()
-    return render_template_string(html)
+    return render_template_string(load_html())
 
 @app.route('/predict', methods=['POST'])
 def predict():
-    if request.method == 'POST':
-        news_text = request.form['news']
-        if not news_text.strip():
-            return render_template_string(load_html(), prediction_text="⚠️ Please enter some text.")
-        
-        transformed_text = vectorizer.transform([news_text])
-        prediction = model.predict(transformed_text)[0]
-
-        result = "✅ This news is Real." if prediction == 0 else "🚫 This news is Fake."
-        return render_template_string(load_html(), prediction_text=result)
+    news = request.form['news']
+    seq = tokenizer.texts_to_sequences([news])
+    padded = pad_sequences(seq, maxlen=max_len, padding='post', truncating='post')
+    prediction = model.predict(padded)[0][0]
+    result = "✅ This news is Real." if prediction < 0.5 else "🚫 This news is Fake."
+    return render_template_string(load_html(), prediction_text=result)
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=8080)
