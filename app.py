@@ -1,36 +1,43 @@
-from flask import Flask, request, render_template_string
-import tensorflow as tf
+# app.py
+import os
 import pickle
-from tensorflow.keras.preprocessing.sequence import pad_sequences
+from flask import Flask, render_template, request
+import numpy as np
+
+MODEL_DIR = "model"
+MODEL_PATH = os.path.join(MODEL_DIR, "fake_news_model.pkl")
+VECTORIZER_PATH = os.path.join(MODEL_DIR, "vectorizer.pkl")
 
 app = Flask(__name__)
 
-MODEL_PATH = "fake_news_model.h5"
-TOKENIZER_PATH = "tokenizer.pkl"
+# Load model & vectorizer (fail early if missing)
+if not os.path.exists(MODEL_PATH) or not os.path.exists(VECTORIZER_PATH):
+    raise FileNotFoundError("Model or vectorizer not found. Run train_model.py first and commit model/ folder.")
 
-# Load LSTM model and tokenizer
-model = tf.keras.models.load_model(MODEL_PATH)
-with open(TOKENIZER_PATH, "rb") as f:
-    tokenizer = pickle.load(f)
+with open(MODEL_PATH, "rb") as f:
+    model = pickle.load(f)
+with open(VECTORIZER_PATH, "rb") as f:
+    vectorizer = pickle.load(f)
 
-max_len = 150
-
-def load_html():
-    with open("index.html", "r", encoding="utf-8") as f:
-        return f.read()
-
-@app.route('/')
+@app.route("/", methods=["GET"])
 def home():
-    return render_template_string(load_html())
+    return render_template("index.html")
 
-@app.route('/predict', methods=['POST'])
+@app.route("/predict", methods=["POST"])
 def predict():
-    news = request.form['news']
-    seq = tokenizer.texts_to_sequences([news])
-    padded = pad_sequences(seq, maxlen=max_len, padding='post', truncating='post')
-    prediction = model.predict(padded)[0][0]
-    result = "✅ This news is Real." if prediction < 0.5 else "🚫 This news is Fake."
-    return render_template_string(load_html(), prediction_text=result)
+    text = request.form.get("text", "").strip()
+    if text == "":
+        return render_template("index.html", prediction_text="⚠️ Please enter some text to analyze.")
+    # transform and predict
+    X = vectorizer.transform([text])
+    pred = model.predict(X)[0]
+    # By our training: label 1 = real, 0 = fake (this script uses that mapping)
+    if int(pred) == 1:
+        result = "✅ This news is Real."
+    else:
+        result = "🚫 This news is Fake."
+    return render_template("index.html", prediction_text=result)
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=8080)
+    # For local testing use port 5000; Render expects port 8080 — Render overrides.
+    app.run(host="0.0.0.0", port=5000)

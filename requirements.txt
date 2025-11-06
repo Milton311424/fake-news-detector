@@ -1,7 +1,6 @@
-Flask
-scikit-learn
+flask
+tensorflow==2.16.1
 pandas
 numpy
+scikit-learn
 gunicorn
-joblib
-openpyxl
