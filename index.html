@@ -1,69 +1,34 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fake News Detector</title>
-    <style>
-        body {
-            background: #f7f9fc;
-            font-family: "Segoe UI", Arial, sans-serif;
-            text-align: center;
-            margin: 0;
-            padding: 0;
-        }
-        .container {
-            margin-top: 100px;
-            background: white;
-            display: inline-block;
-            padding: 40px 60px;
-            border-radius: 15px;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
-        }
-        h1 {
-            color: #2c3e50;
-            margin-bottom: 20px;
-        }
-        textarea {
-            width: 100%;
-            height: 120px;
-            padding: 10px;
-            border-radius: 10px;
-            border: 1px solid #ccc;
-            font-size: 16px;
-            resize: none;
-        }
-        button {
-            margin-top: 20px;
-            padding: 10px 20px;
-            background-color: #3498db;
-            color: white;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            font-size: 16px;
-        }
-        button:hover {
-            background-color: #2980b9;
-        }
-        .result {
-            margin-top: 20px;
-            font-size: 18px;
-            font-weight: bold;
-        }
-    </style>
+  <meta charset="utf-8" />
+  <title>Fake News Detector</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <style>
+    body { font-family: Arial, sans-serif; background:#f3f6f9; text-align:center; padding:40px; }
+    .card { background:#fff; display:inline-block; padding:30px; border-radius:12px; box-shadow:0 6px 24px rgba(0,0,0,0.08); width:80%; max-width:800px; }
+    textarea { width:100%; height:140px; padding:12px; font-size:16px; border-radius:8px; border:1px solid #ddd; resize:none; }
+    button { margin-top:12px; padding:10px 20px; border-radius:8px; border:none; background:#007bff; color:#fff; font-size:16px; cursor:pointer; }
+    .result { margin-top:18px; font-weight:600; font-size:18px; padding:12px 18px; border-radius:8px; display:inline-block; }
+    .real { background:#dff7e6; color:#0a7b38; }
+    .fake { background:#ffe6e6; color:#b02a37; }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <h1>📰 Fake News Detection</h1>
-        <form action="/predict" method="POST">
-            <textarea name="news" placeholder="Enter the news text here..." required></textarea>
-            <br>
-            <button type="submit">Check News</button>
-        </form>
-        {% if prediction_text %}
-            <div class="result">{{ prediction_text }}</div>
-        {% endif %}
-    </div>
+  <div class="card">
+    <h1>📰 Fake News Detector (India)</h1>
+    <p>Paste a short news sentence (2–3 sentences). Click <strong>Check News</strong>.</p>
+
+    <form action="/predict" method="post">
+      <textarea name="text" placeholder="Type the news text here..."></textarea><br />
+      <button type="submit">Check News</button>
+    </form>
+
+    {% if prediction_text %}
+      <div class="result {{ 'real' if 'Real' in prediction_text else 'fake' }}">
+        {{ prediction_text }}
+      </div>
+    {% endif %}
+  </div>
 </body>
 </html>
