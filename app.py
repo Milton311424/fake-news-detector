@@ -6,7 +6,8 @@ import numpy as np
 MODEL_PATH = "fake_news_model.pkl"
 VECTORIZER_PATH = "vectorizer.pkl"
 
-app = Flask(__name__)
+# Tell Flask to look for templates in the root directory ('.')
+app = Flask(__name__, template_folder='.')
 
 # Load model & vectorizer (fail early if missing)
 if not os.path.exists(MODEL_PATH) or not os.path.exists(VECTORIZER_PATH):
@@ -28,17 +29,20 @@ def predict():
     text = request.form.get("text", "").strip()
     if text == "":
         return render_template("index.html", prediction_text="⚠️ Please enter some text to analyze.")
-    # transform and predict
+    
+    # Transform and predict
     X = vectorizer.transform([text])
     pred = model.predict(X)[0]
+    
     # By our training: label 1 = real, 0 = fake
     if int(pred) == 1:
         result = "✅ This news is Real."
     else:
         result = "🚫 This news is Fake."
+    
     return render_template("index.html", prediction_text=result)
 
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5050))  # 5050 for local, auto for Railway
+    port = int(os.environ.get("PORT", 5050))  # 5050 for local, auto for Render/Railway
     app.run(host="0.0.0.0", port=port)
